@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name='Devoir_Corentin_LEGALL'
