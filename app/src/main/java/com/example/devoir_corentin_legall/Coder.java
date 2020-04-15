@@ -19,20 +19,25 @@ public class Coder {
     public boolean encode(String text) throws IOException {
 
         int size = text.length();
-        byte[] temp_byte = new byte[1];
+        int file_size = (int) file.length();
+        byte[] temp_byte = new byte[file_size];
         byte[] text_bytes = text.getBytes();
-        BufferedOutputStream buf_out = new BufferedOutputStream(new FileOutputStream(file));
         BufferedInputStream buf_in = new BufferedInputStream(new FileInputStream(file));
 
-        int counter = 0;
+        buf_in.read(temp_byte, 0, temp_byte.length);
+        buf_in.close();
+        int counter = temp_byte[4]<<8 | temp_byte[5] & 0xFF;
         for(int i=0; i<size; i++){
             for(int y=0; y<4; y++){
-                buf_in.read(temp_byte, counter, 1);
-                temp_byte[0] = (byte)((temp_byte[0] & 0xFC) | ((text_bytes[i] >> 2*y) & 0x3));
-                buf_out.write(temp_byte, counter, 1);
+
+                temp_byte[counter] = (byte)((temp_byte[counter] & 0xFC) | ((text_bytes[i] >> 2*y) & 0x3));
                 counter ++;
             }
         }
+        BufferedOutputStream buf_out = new BufferedOutputStream(new FileOutputStream(file));
+        buf_out.write(temp_byte, 0, temp_byte.length);
+        buf_out.flush();
+        buf_out.close();
         return true;
     }
 
@@ -41,16 +46,19 @@ public class Coder {
         byte[] bytes = new byte[size];
         byte[] text = new byte[size];
         BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
-        int counter = 0;
-
+        int counter = -1;
         buf.read(bytes, 0, bytes.length);
+        buf.close();
 
-        for(int i=0; i<bytes.length; i++){
-            int letterCounter = i%4;
+        int offset = bytes[4]<<8 | bytes[5] & 0xFF;
+
+        for(int i=offset; i<bytes.length; i++){
+            int letterCounter = (i-offset)%4;
             if(letterCounter == 0)
                 counter ++;
-            text[counter] |= (bytes[i] & 0x3) << letterCounter;
+            text[counter] |= ((bytes[i] & 0x3) << letterCounter*2);
         }
-        return text.toString();
+        String test = new String(text,"UTF-8");
+        return test;
     }
 }
