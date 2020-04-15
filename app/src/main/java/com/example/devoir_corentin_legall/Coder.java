@@ -20,18 +20,27 @@ public class Coder {
     public boolean encode(String text) throws IOException {
 
         int size = text.length();
-        int file_size = (int) file.length();
-        byte[] temp_byte = new byte[file_size];
+        byte[] temp_byte = new byte[(int)file.length()];
         byte[] text_bytes = text.getBytes();
-        BufferedInputStream buf_in = new BufferedInputStream(new FileInputStream(file));
 
-        buf_in.read(temp_byte, 0, temp_byte.length);
+        BufferedInputStream buf_in = new BufferedInputStream(new FileInputStream(file));
+        int read = buf_in.read(temp_byte, 0, temp_byte.length);
+        if(read < 0) {
+            return false;
+        }
+        
         buf_in.close();
-        int counter = temp_byte[4]<<8 | temp_byte[5] & 0xFF;
+
+        int counter;
+        if(temp_byte[0] == (byte)0x89 && temp_byte[1] == (byte)0x50 && temp_byte[2] == (byte)0x4E && temp_byte[3] == (byte)0x47)
+            counter = 33;
+        else
+            counter = (temp_byte[4]<<8 | temp_byte[5] & 0xFF) & 0xFFFF;
+
         for(int i=0; i<size; i++){
             for(int y=0; y<4; y++){
 
-                temp_byte[counter] = (byte)((temp_byte[counter] & 0xFC) | ((text_bytes[i] >> 2*y) & 0x3));
+                temp_byte[counter] = (byte)((temp_byte[counter] & (byte)0xFC) + ((text_bytes[i] >> 2*y) & (byte)0x3));
                 counter ++;
             }
         }
@@ -51,7 +60,12 @@ public class Coder {
         buf.read(bytes, 0, bytes.length);
         buf.close();
 
-        int offset = bytes[4]<<8 | bytes[5] & 0xFF;
+        int offset;
+
+        if(bytes[0] == (byte)0x89 && bytes[1] == (byte)0x50 && bytes[2] == (byte)0x4E && bytes[3] == (byte)0x47)
+            offset = 33;
+        else
+            offset =( bytes[4]<<8 | bytes[5] & 0xFF) & 0xFFFF;
 
         for(int i=offset; i<bytes.length; i++){
             int letterCounter = (i-offset)%4;
