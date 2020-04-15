@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class Coder {
     private File file;
@@ -58,7 +59,16 @@ public class Coder {
                 counter ++;
             text[counter] |= ((bytes[i] & 0x3) << letterCounter*2);
         }
-        String test = new String(text,"UTF-8");
-        return test;
+        if(text[0]<32 || text[0]>126)
+            return null;
+        byte[] endtext = new byte[1024];
+        int i=0;
+        for(byte b : text){
+            if(b<32 || b>126)
+                break;
+            endtext[i] = b;
+            i++;
+        }
+        return new String(endtext, "windows-1252");
     }
 }

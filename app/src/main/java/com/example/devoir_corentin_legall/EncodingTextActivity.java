@@ -48,7 +48,7 @@ public class EncodingTextActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(decoded_text.length()>0) {
+        if(decoded_text != null) {
             text_view.setText(decoded_text);
         }
         image_view.setImageBitmap(BitmapFactory.decodeFile(image_path));
