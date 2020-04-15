@@ -1,28 +1,19 @@
 package com.example.devoir_corentin_legall;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
@@ -57,7 +48,11 @@ public class MainActivity extends AppCompatActivity {
             recycler = findViewById(R.id.recycler);
             recycler.setLayoutManager( new GridLayoutManager(this, 2));
             recycler.hasFixedSize();
-            recycler.setAdapter( new ImageAdapter(images, getBaseContext()));
+            recycler.setAdapter( new ImageAdapter(images, this));
         }
     }
+
+
+
+
 }
