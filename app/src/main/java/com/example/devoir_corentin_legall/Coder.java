@@ -2,13 +2,13 @@ package com.example.devoir_corentin_legall;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+
 
 public class Coder {
     private File file;
@@ -23,31 +23,37 @@ public class Coder {
         byte[] temp_byte = new byte[(int)file.length()];
         byte[] text_bytes = text.getBytes();
 
-        BufferedInputStream buf_in = new BufferedInputStream(new FileInputStream(file));
+        FileInputStream file_in =new FileInputStream(file);
+        BufferedInputStream buf_in = new BufferedInputStream(file_in);
         int read = buf_in.read(temp_byte, 0, temp_byte.length);
         if(read < 0) {
             return false;
         }
-        
+
         buf_in.close();
+        file_in.close();
 
         int counter;
+
         if(temp_byte[0] == (byte)0x89 && temp_byte[1] == (byte)0x50 && temp_byte[2] == (byte)0x4E && temp_byte[3] == (byte)0x47)
-            counter = 33;
+            counter = 12 + 1;
         else
-            counter = (temp_byte[4]<<8 | temp_byte[5] & 0xFF) & 0xFFFF;
+            counter = 2 + 1;
+
 
         for(int i=0; i<size; i++){
             for(int y=0; y<4; y++){
 
-                temp_byte[counter] = (byte)((temp_byte[counter] & (byte)0xFC) + ((text_bytes[i] >> 2*y) & (byte)0x3));
+                temp_byte[temp_byte.length - counter] = (byte)((temp_byte[temp_byte.length - counter] & (byte)0xFC) + ((text_bytes[i] >> 2*y) & (byte)0x3));
                 counter ++;
             }
         }
-        BufferedOutputStream buf_out = new BufferedOutputStream(new FileOutputStream(file));
-        buf_out.write(temp_byte, 0, temp_byte.length);
+        FileOutputStream file_out = new FileOutputStream(file, false);
+        BufferedOutputStream buf_out = new BufferedOutputStream(file_out);
+        buf_out.write(temp_byte);
         buf_out.flush();
         buf_out.close();
+        file_out.close();
         return true;
     }
 
@@ -55,23 +61,25 @@ public class Coder {
         int size = (int) file.length();
         byte[] bytes = new byte[size];
         byte[] text = new byte[size];
-        BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+        FileInputStream file_in =new FileInputStream(file);
+        BufferedInputStream buf = new BufferedInputStream(file_in);
         int counter = -1;
         buf.read(bytes, 0, bytes.length);
         buf.close();
+        file_in.close();
 
         int offset;
 
         if(bytes[0] == (byte)0x89 && bytes[1] == (byte)0x50 && bytes[2] == (byte)0x4E && bytes[3] == (byte)0x47)
-            offset = 33;
+            offset = 12+1;
         else
-            offset =( bytes[4]<<8 | bytes[5] & 0xFF) & 0xFFFF;
+            offset = 2 + 1;
 
         for(int i=offset; i<bytes.length; i++){
             int letterCounter = (i-offset)%4;
             if(letterCounter == 0)
                 counter ++;
-            text[counter] |= ((bytes[i] & 0x3) << letterCounter*2);
+            text[counter] |= ((bytes[ bytes.length - i] & 0x3) << letterCounter*2);
         }
         if(text[0]<32 || text[0]>126)
             return null;
